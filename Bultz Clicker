@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Bultz Clicker — Recompensa por Anúncio</title>
+<style>
+  :root{--bg1:#0b1020;--bg2:#0f1633;--card:#121936;--accent:#00e5a8;--accent2:#7c7cff;--text:#e7ebff;--muted:#9aa3ff}
+  body{margin:0;display:flex;justify-content:center;align-items:center;height:100vh;background:linear-gradient(180deg,var(--bg1),var(--bg2));color:var(--text);font-family:Arial}
+  .game{background:var(--card);padding:18px;border-radius:18px;text-align:center;width:360px;box-shadow:0 20px 40px rgba(0,0,0,.45);border:1px solid #1f2a6a}
+  h1 span{color:var(--accent)}
+  .chip{background:#0b1020;border:1px solid #1f2a6a;border-radius:999px;padding:4px 10px;color:var(--muted);font-size:12px}
+  button{padding:10px 14px;border:none;border-radius:14px;background:linear-gradient(180deg,var(--accent),#00c792);color:#001b12;font-size:14px;font-weight:900;cursor:pointer}
+  button.secondary{background:#1f2a6a;color:var(--text)}
+  .stats{color:var(--muted)}
+  .bar{height:8px;background:#0b1020;border:1px solid #1f2a6a;border-radius:999px;overflow:hidden;margin:6px 0}
+  .fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));width:0%}
+  .section{margin-top:10px;text-align:left}
+  .mission{display:flex;justify-content:space-between;align-items:center;background:#0b1020;border:1px solid #1f2a6a;border-radius:12px;padding:8px;margin-top:6px}
+  .modal{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;justify-content:center;align-items:center}
+  .modal .box{background:#121936;border-radius:16px;padding:20px;width:300px;text-align:center}
+</style>
+</head>
+<body>
+<div class="game">
+  <div class="chip">Nível <strong id="level">1</strong></div>
+  <h1>Bultz<span>Clicker</span></h1>
+  <button onclick="clickCoin()">💰 CLIQUE!</button>
+  <div class="bar"><div class="fill" id="xpbar"></div></div>
+  <div class="stats">
+    <p>Moedas: <strong id="coins">0</strong></p>
+    <p>Por clique: <strong id="perClick">1</strong> | Auto: <strong id="auto">0</strong>/s</p>
+  </div>
+
+  <div class="section">
+    <strong>🎁 Recompensa</strong>
+    <div class="mission">
+      <span>Assistir anúncio</span>
+      <button class="secondary" onclick="showAd()">Ganhar +100</button>
+    </div>
+  </div>
+
+  <div class="section">
+    <strong>🎯 Missões</strong>
+    <div class="mission"><span>Dar 50 cliques</span><button class="secondary" onclick="claimMission()">Resgatar</button></div>
+  </div>
+
+  <div class="section">
+    <button class="secondary" onclick="upgradeClick()">Upgrade Clique — <span id="priceClick">20</span></button>
+    <button class="secondary" onclick="buyAuto()">Auto (+1/s) — <span id="priceAuto">50</span></button>
+  </div>
+</div>
+
+<div class="modal" id="adModal">
+  <div class="box">
+    <h3>📺 Anúncio</h3>
+    <p>Simulando anúncio...</p>
+    <p>Aguarde <strong id="timer">5</strong>s</p>
+  </div>
+</div>
+
+<script>
+let coins=0, perClick=1, auto=0, level=1, xp=0, xpNeed=100;
+let priceClick=20, priceAuto=50, clicks=0;
+let adCooldown=0;
+
+function clickCoin(){ coins+=perClick; clicks++; gainXP(5); update(); }
+function gainXP(v){ xp+=v; if(xp>=xpNeed){ xp-=xpNeed; level++; xpNeed=Math.round(xpNeed*1.3); perClick++; } }
+function upgradeClick(){ if(coins>=priceClick){ coins-=priceClick; perClick++; priceClick=Math.round(priceClick*1.5); update(); } }
+function buyAuto(){ if(coins>=priceAuto){ coins-=priceAuto; auto++; priceAuto=Math.round(priceAuto*1.6); update(); } }
+function tick(){ coins+=auto; if(adCooldown>0) adCooldown--; update(false); }
+
+function showAd(){ if(adCooldown>0) return alert('Espere para ver outro anúncio');
+  const m=document.getElementById('adModal'); m.style.display='flex';
+  let t=5; document.getElementById('timer').innerText=t;
+  const i=setInterval(()=>{ t--; document.getElementById('timer').innerText=t; if(t<=0){ clearInterval(i); m.style.display='none'; coins+=100; adCooldown=30; update(); } },1000);
+}
+
+function claimMission(){ if(clicks>=50){ coins+=50; clicks=0; update(); } }
+
+function update(saveNow=true){
+  document.getElementById('coins').innerText=coins;
+  document.getElementById('perClick').innerText=perClick;
+  document.getElementById('auto').innerText=auto;
+  document.getElementById('level').innerText=level;
+  document.getElementById('priceClick').innerText=priceClick;
+  document.getElementById('priceAuto').innerText=priceAuto;
+  document.getElementById('xpbar').style.width=Math.min(100,Math.round((xp/xpNeed)*100))+'%';
+}
+setInterval(tick,1000); update();
+</script>
+</body>
+</html>
